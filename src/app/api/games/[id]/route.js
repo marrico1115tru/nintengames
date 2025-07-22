@@ -1,22 +1,38 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 
-export async function GET() {
-  const game = await prisma.games.findMany();
+const prisma = new PrismaClient();
+
+export async function GET(request, props) {
+  const params = await props.params;
+  const game = await prisma.games.findUnique({where: { id: parseInt(params.id) }});
 
   return NextResponse.json(game);
 }
 
-export async function POST(request) {
-  let json = await request.json();
-  const usuario = await prisma.games.create({
-    data: {
-      title: json.title,
-      platform_id: json.platform_id,
-      category_id: json.category_id,
-      cover: json.cover,
-      year: new Date(),
-    },
+export async function DELETE(request, props) {
+  const params = await props.params;
+  const id = parseInt(params.id);
+  const game = await prisma.games.delete({
+    where: { id: id },
   });
-  return NextResponse.json(usuario);
-}
+
+return NextResponse.json({
+  mensaje: "Game eliminado correctamente",
+  game
+});}
+
+export async function PUT(request, props) {
+  const params = await props.params;
+  const id = parseInt(params.id);
+  const body = await request.json();
+
+  const game = await prisma.games.update({
+    where: { id: id },
+    data: body, 
+  });
+
+return NextResponse.json({
+  mensaje: "Game actualizado correctamente",
+  game
+});}

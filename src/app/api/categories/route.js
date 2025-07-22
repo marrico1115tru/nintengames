@@ -14,5 +14,7 @@ export async function POST(request) {
       name: json.name,
     },
   });
-  return NextResponse.json(categori);
+  return NextResponse.json({
+    mensaje: "Categoria creado correctamente",
+    categori});
 }

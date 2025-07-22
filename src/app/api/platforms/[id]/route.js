@@ -1,18 +1,38 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 
-export async function GET() {
-  const plarform = await prisma.platforms.findMany();
+const prisma = new PrismaClient();
 
-  return NextResponse.json(plarform);
+export async function GET(request, props) {
+  const params = await props.params;
+  const platform = await prisma.platforms.findUnique({where: { id: parseInt(params.id) }});
+
+  return NextResponse.json(platform);
 }
 
-export async function POST(request) {
-  let json = await request.json();
-  const plarform = await prisma.platforms.create({
-    data: {
-      name: json.name,
-    },
+export async function DELETE(request, props) {
+  const params = await props.params;
+  const id = parseInt(params.id);
+  const platform = await prisma.platforms.delete({
+    where: { id: id },
   });
-  return NextResponse.json(plarform);
-}
+
+return NextResponse.json({
+  mensaje: "Plataforma eliminada correctamente",
+  platform
+});}
+
+export async function PUT(request, props) {
+  const params = await props.params;
+  const id = parseInt(params.id);
+  const body = await request.json();
+
+  const platform = await prisma.platforms.update({
+    where: { id: id },
+    data: body, 
+  });
+
+return NextResponse.json({
+  mensaje: "Plataforma actualizada correctamente",
+  platform
+});}

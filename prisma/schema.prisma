@@ -27,7 +27,7 @@ model games {
   platform_id Int
   category_id Int
   cover String @db.VarChar(64)
-  year DateTime
+  year Int
 
   platform platforms @relation(fields: [platform_id], references: [id])
   category categories @relation(fields: [category_id], references: [id])

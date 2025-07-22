@@ -16,9 +16,8 @@ export async function POST(request) {
       password: json.password,
     },
   });
-  return NextResponse.json(usuario);
-}
+return NextResponse.json({
+  mensaje: "Usuario creado correctamente",
+  usuario
+});}
 
-export async function DELETE() {
-  return NextResponse.json({ mensaje: "usuario eliminado correectamente" });
-}

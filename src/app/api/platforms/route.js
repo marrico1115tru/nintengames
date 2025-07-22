@@ -1,37 +1,20 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function GET(request, context) {
-  const { params } = context;
-  const platform = await prisma.platforms.findUnique({
-    where: { id: parseInt(params.id) },
-  });
+export async function GET() {
+  const platform = await prisma.platforms.findMany();
 
   return NextResponse.json(platform);
 }
 
-export async function DELETE(request, context) {
-  const { params } = context;
-  const id = parseInt(params.id);
-
-  const platform = await prisma.platforms.delete({
-    where: { id },
-  });
-
-  return NextResponse.json(platform);
-}
-
-export async function PUT(request, context) {
-  const { params } = context;
-  const id = parseInt(params.id);
-  const body = await request.json();
-
-  const platform = await prisma.platforms.update({
-    where: { id },
+export async function POST(request) {
+  let json = await request.json();
+  const platform = await prisma.platforms.create({
     data: {
-      name: body.name,
+      name: json.name,
     },
   });
-
-  return NextResponse.json(platform);
-}
+return NextResponse.json({
+  mensaje: "Plataforma creada correctamente",
+  platform
+});}

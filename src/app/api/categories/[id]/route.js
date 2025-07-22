@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function GET(request, { params }) {
+export async function GET(request, props) {
+  const params = await props.params;
   const id = parseInt(params.id);
   const categori = await prisma.categories.findUnique({
     where: { id },
@@ -10,17 +11,21 @@ export async function GET(request, { params }) {
   return NextResponse.json(categori);
 }
 
-export async function DELETE(request, { params }) {
+export async function DELETE(request, props) {
+  const params = await props.params;
   const id = parseInt(params.id);
 
   const categori = await prisma.categories.delete({
     where: { id },
   });
 
-  return NextResponse.json(categori);
+  return NextResponse.json({
+    mensaje: "Categoria eliminada correctamente",
+    categori});
 }
 
-export async function PUT(request, { params }) {
+export async function PUT(request, props) {
+  const params = await props.params;
   const id = parseInt(params.id);
   const body = await request.json();
 
@@ -31,5 +36,7 @@ export async function PUT(request, { params }) {
     },
   });
 
-  return NextResponse.json(categori);
+  return NextResponse.json({
+     mensaje: "Categoria actualizada correctamente",
+    categori});
 }
