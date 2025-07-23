@@ -1,3 +1,5 @@
+import { writeFile } from "fs/promises";
+import path from "path";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
@@ -7,18 +9,42 @@ export async function GET() {
   return NextResponse.json(game);
 }
 
-export async function POST(request) {
-  let json = await request.json();
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+export async function POST(req) {
+  const formData = await req.formData();
+
+  const title = formData.get("title");
+  const platform_id = parseInt(formData.get("platform_id"));
+  const category_id = parseInt(formData.get("category_id"));
+  const year = parseInt(formData.get("year"));
+  const file = formData.get("cover");
+
+  if (!file || typeof file === "string") {
+    return NextResponse.json({ error: "No se subió imagen válida" }, { status: 400 });
+  }
+
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+  const fileName = Date.now() + "_" + file.name;
+  const filePath = path.join(process.cwd(), "public", "uploads", fileName);
+
+  await writeFile(filePath, buffer);
+
   const game = await prisma.games.create({
     data: {
-      title: json.title,
-      platform_id: json.platform_id,
-      category_id: json.category_id,
-      cover: json.cover,
-      year: json.year,
+      title,
+      platform_id,
+      category_id,
+      year,
+      cover: `/uploads/${fileName}`, 
     },
   });
-return NextResponse.json({
-  mensaje: "Game creado correctamente",
-  game
-});}
+
+  return NextResponse.json({ mensaje: "Game creado correctamente", game });
+}
+

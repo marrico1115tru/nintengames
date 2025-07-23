@@ -1,17 +1,69 @@
 "use client";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import styles from "../styles/adiccionar.module.css";
 import { FiCamera } from "react-icons/fi";
+import axios from "axios";
 import { useRouter } from "next/navigation";
 
-export default function Consultar() {
+export default function FormAgregar() {
   const router = useRouter();
+
+  const [form, setForm] = useState({
+    title: "",
+    platform_id: "",
+    category_id: "",
+    year: "",
+    cover: null,
+  });
+
+  const [imagePreview, setImagePreview] = useState(null);
+  const [platforms, setPlatforms] = useState([]);
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const platformsRes = await axios.get("/api/platforms");
+      const categoriesRes = await axios.get("/api/categories");
+      setPlatforms(platformsRes.data);
+      setCategories(categoriesRes.data);
+    };
+    fetchData();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setForm({ ...form, cover: file });
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("title", form.title);
+    formData.append("platform_id", form.platform_id);
+    formData.append("category_id", form.category_id);
+    formData.append("year", form.year);
+    formData.append("cover", form.cover);
+
+    try {
+      await axios.post("/api/games", formData);
+      alert("Juego guardado correctamente.");
+    } catch (err) {
+      console.error(err);
+      alert("Error al guardar.");
+    }
+  };
 
   return (
     <div className={styles.adiccionar}>
       <div className={styles.topBar}>
         <h1 className={styles.titulo}>
-          <span className={styles.tituloParte1}>Modificar</span>{" "}
+          <span className={styles.tituloParte1}>Adiccionarr</span>{" "}
           <span className={styles.tituloParte2}>VideoJuego</span>
         </h1>
         <button
@@ -21,48 +73,80 @@ export default function Consultar() {
           ✕
         </button>
       </div>
-
-      <Image
-        src="/image.png"
-        alt="Super Mario Odyssey"
+      <img
+        src={imagePreview || "/image.png"}
+        alt="Preview"
         width={180}
         height={180}
         className={styles.juegoImagen}
       />
+      <form className={styles.inputGroup} onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="title"
+          placeholder="Título"
+          value={form.title}
+          onChange={handleChange}
+          className={styles.input}
+        />
 
-      <div className={styles.inputGroup}>
-        <input type="text" className={styles.input} defaultValue="Titulo" />
-
-        <select className={styles.select} defaultValue="">
-          <option value="" disabled>
-            Seleccione Consola
+        <select
+          name="platform_id"
+          value={form.platform_id}
+          onChange={handleChange}
+          className={styles.select}
+        >
+          <option value="" disabled hidden>
+            Selecciona Consola...
           </option>
-          <option>Nintendo Switch</option>
-          <option>PlayStation 5</option>
-          <option>Xbox Series X</option>
+          {platforms.map((platform) => (
+            <option key={platform.id} value={platform.id}>
+              {platform.name}
+            </option>
+          ))}
         </select>
 
-        <select className={styles.select} defaultValue="">
-          <option value="" disabled>
-            Seleccione Categoría
+        <select
+          name="category_id"
+          value={form.category_id}
+          onChange={handleChange}
+          className={styles.select}
+        >
+          <option value="" disabled hidden>
+            Selecciona Categoría...
           </option>
-          <option>Aventura</option>
-          <option>Acción</option>
-          <option>Plataformas</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
         </select>
 
-        <label className={styles.fileInputLabel}>
+        <label htmlFor="cover" className={styles.fileInputLabel}>
           Subir Portada
           <FiCamera className={styles.iconoCamaraDerecha} />
-          <input type="file" className={styles.fileInput} />
+          <input
+            type="file"
+            id="cover"
+            name="cover"
+            accept="image/*"
+            onChange={handleImageChange}
+            className={styles.fileInput}
+          />
         </label>
 
-        <div className={styles.inputGroup}>
-          <input type="text" className={styles.input} defaultValue="Año" />
+        <input
+          name="year"
+          placeholder="Año"
+          value={form.year}
+          onChange={handleChange}
+          className={styles.input}
+        />
 
-          <button className={styles.boton}>Guardar</button>
-        </div>
-      </div>
+        <button type="submit" className={styles.boton}>
+          Guardar
+        </button>
+      </form>
     </div>
   );
 }

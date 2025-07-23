@@ -4,7 +4,7 @@ import styles from "../styles/modificar.module.css";
 import { FiCamera } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 
-export default function Consultar() {
+export default function Modificar() {
   const router = useRouter();
 
   return (
