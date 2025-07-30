@@ -5,6 +5,7 @@ CREATE TABLE `users` (
     `email` VARCHAR(32) NOT NULL,
     `password` VARCHAR(64) NOT NULL,
 
+    UNIQUE INDEX `users_email_key`(`email`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -15,7 +16,7 @@ CREATE TABLE `games` (
     `platform_id` INTEGER NOT NULL,
     `category_id` INTEGER NOT NULL,
     `cover` VARCHAR(64) NOT NULL,
-    `year` DATETIME(3) NOT NULL,
+    `year` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

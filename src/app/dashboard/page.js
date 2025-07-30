@@ -3,32 +3,52 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
 import styles from "../styles/dashboard.module.css";
 
 export default function Dashboard() {
   const router = useRouter();
   const [games, setGames] = useState([]);
-  
+  const [platforms, setPlatforms] = useState([]);
 
   useEffect(() => {
-    const fetchGames = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get("/api/games");
-        setGames(res.data);
+        const [gamesRes, platformsRes] = await Promise.all([
+          axios.get("/api/games"),
+          axios.get("/api/platforms"),
+        ]);
+
+        setGames(gamesRes.data);
+        setPlatforms(platformsRes.data);
       } catch (error) {
-        console.error("Error al obtener juegos:", error);
+        console.error("Error al cargar datos:", error);
       }
     };
 
-    fetchGames();
+    fetchData();
   }, []);
+
+  const getPlatformName = (id) =>
+    platforms.find((p) => p.id === id)?.name || "Plataforma desconocida";
+
+  const eliminarJuego = async (id) => {
+    const confirmar = window.confirm("¿Estás seguro de que deseas eliminar este juego?");
+    if (!confirmar) return;
+
+    try {
+      await axios.delete(`/api/games/${id}`);
+      setGames((prev) => prev.filter((juego) => juego.id !== id));
+    } catch (error) {
+      console.error("Error al eliminar el juego:", error);
+      alert("Hubo un error al eliminar el juego.");
+    }
+  };
 
   return (
     <div className={styles.pageWrapper}>
       <div className={styles.topBar}>
         <h1 className={styles.titulo}>Administrar videoJuegos</h1>
-        <button className={styles.closeBtn}>✕</button>
+        <button className={styles.closeBtn} onClick={() => router.push("/login")}>✕</button>
       </div>
 
       <button
@@ -55,7 +75,7 @@ export default function Dashboard() {
 
               <div className={styles.juegoTexto}>
                 <span className={styles.plataforma}>
-                  {juego.platform?.name || "Plataforma desconocida"}
+                  {getPlatformName(juego.platform_id)}
                 </span>
                 <span className={styles.nombreJuego}>{juego.title}</span>
               </div>
@@ -63,22 +83,21 @@ export default function Dashboard() {
               <div className={styles.acciones}>
                 <button
                   className={`${styles.iconButton} ${styles.ver}`}
-                  onClick={() => router.push(`/consulta/${juego.id}`)
-}
+                  onClick={() => router.push(`/consulta/${juego.id}`)}
                 >
                   <Image src="/busqueda.png" alt="Ver" width={16} height={16} />
                 </button>
 
                 <button
                   className={`${styles.iconButton} ${styles.editar}`}
-                  onClick={() => router.push(`/modificar?id=${juego.id}`)}
+                  onClick={() => router.push(`/modificar/${juego.id}`)}
                 >
                   <Image src="/pencil.png" alt="Editar" width={16} height={16} />
                 </button>
 
                 <button
                   className={styles.eliminar}
-                  onClick={() => alert(`Eliminar juego con ID: ${juego.id}`)}
+                  onClick={() => eliminarJuego(juego.id)}
                 >
                   <Image src="/delete.png" alt="Eliminar" width={25} height={20} />
                 </button>

@@ -1,23 +1,40 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import styles from '@/app/styles/consulta.module.css';
-import axios from 'axios';
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import Image from "next/image";
+import styles from "@/app/styles/consulta.module.css";
+import axios from "axios";
 
-export default function Consultar({ params }) {
-  const { id } = params;
+export default function Consultar() {
   const router = useRouter();
+  const params = useParams();
+  const { id } = params;
+
   const [juego, setJuego] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await axios.get(`/api/games/${id}`);
-        setJuego(res.data);
+        const game = res.data;
+
+        const [platform, category] = await Promise.all([
+          axios
+            .get(`/api/platforms/${game.platform_id}`)
+            .then((res) => res.data),
+          axios
+            .get(`/api/categories/${game.category_id}`)
+            .then((res) => res.data),
+        ]);
+
+        setJuego({
+          ...game,
+          platform,
+          category,
+        });
       } catch (err) {
-        console.error('Error al obtener el juego:', err);
-        router.push('/not-found'); 
+        console.error("Error al obtener el juego:", err);
+        router.push("/not-found");
       }
     };
 
@@ -30,12 +47,12 @@ export default function Consultar({ params }) {
     <div className={styles.consulta}>
       <div className={styles.topBar}>
         <h1 className={styles.titulo}>
-          <span className={styles.tituloParte1}>Consultar</span>{' '}
+          <span className={styles.tituloParte1}>Consultar</span>{" "}
           <span className={styles.tituloParte2}>VideoJuego</span>
         </h1>
         <button
           className={styles.closeBtn}
-          onClick={() => router.push('/dashboard')}
+          onClick={() => router.push("/dashboard")}
         >
           ✕
         </button>
