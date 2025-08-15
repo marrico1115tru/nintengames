@@ -162,8 +162,8 @@ export default function FormAgregar() {
           value={form.year}
           onChange={handleChange}
           className={styles.input}
-          min="1970"
-          max="2100"
+          min="1000"
+          max="3000"
           required
         />
 
