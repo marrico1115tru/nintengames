@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `games` ADD COLUMN `year` INTEGER NOT NULL DEFAULT 2023,
+    MODIFY `version` VARCHAR(20) NULL;

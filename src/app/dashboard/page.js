@@ -27,6 +27,7 @@ export default function Dashboard() {
 
     fetchData();
   }, []);
+  
 
   const getPlatformName = (id) =>
     platforms.find((p) => p.id === id)?.name || "Plataforma desconocida";

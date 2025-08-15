@@ -1,42 +1,64 @@
-"use client";
-import styles from "../styles/login.module.css";
+'use client';
+
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import axios from "axios";
-import Cookies from "js-cookie"; 
+import Cookies from "js-cookie";
+import styles from "@/app/styles/login.module.css";
+import api from "@/lib/api";
 
 export default function Home() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isClient, setIsClient] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleLogin = async () => {
     setError("");
 
+    if (!email || !password) {
+      setError("Por favor ingresa correo y contraseña");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const response = await axios.post("/api/auth/login", {
-        email,
-        password,
-      });
+      const response = await api.post("/auth/login", { email, password });
+      const token = response.data.token;
 
-      const { token } = response.data;
+      if (isClient) {
+        Cookies.set("token", token, {
+          expires: 1,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+        });
+      }
 
-      Cookies.set("token", token, {
-        expires: 1, 
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-      });
+      await Promise.all([api.get("/games"), api.get("/platforms")]);
 
       router.push("/dashboard");
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.error || "Error al iniciar sesión");
+      console.error("Error en login:", err);
+
+      if (err.response) {
+        setError(err.response.data?.error || "Usuario no encontrado");
+      } else if (err.request) {
+        setError("No se pudo conectar con el servidor");
       } else {
         setError("Error inesperado");
       }
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (!isClient) return null;
 
   return (
     <div className={styles.login}>
@@ -65,8 +87,8 @@ export default function Home() {
 
       {error && <p className={styles.error}>{error}</p>}
 
-      <button className={styles.boton} onClick={handleLogin}>
-        Ingresar
+      <button className={styles.boton} onClick={handleLogin} disabled={loading}>
+        {loading ? "Ingresando..." : "Ingresar"}
       </button>
     </div>
   );

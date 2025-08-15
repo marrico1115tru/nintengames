@@ -16,22 +16,7 @@ export default function Consultar() {
     const fetchData = async () => {
       try {
         const res = await axios.get(`/api/games/${id}`);
-        const game = res.data;
-
-        const [platform, category] = await Promise.all([
-          axios
-            .get(`/api/platforms/${game.platform_id}`)
-            .then((res) => res.data),
-          axios
-            .get(`/api/categories/${game.category_id}`)
-            .then((res) => res.data),
-        ]);
-
-        setJuego({
-          ...game,
-          platform,
-          category,
-        });
+        setJuego(res.data);
       } catch (err) {
         console.error("Error al obtener el juego:", err);
         router.push("/not-found");
@@ -39,7 +24,7 @@ export default function Consultar() {
     };
 
     if (id) fetchData();
-  }, [id]);
+  }, [id, router]);
 
   if (!juego) return <p>Cargando...</p>;
 
@@ -82,6 +67,10 @@ export default function Consultar() {
         <div className={styles.campo}>
           <div className={styles.label}>Año:</div>
           <div className={styles.valor}>{juego.year}</div>
+        </div>
+        <div className={styles.campo}>
+          <div className={styles.label}>Version:</div>
+          <div className={styles.valor}>{juego.version}</div>
         </div>
       </div>
     </div>
